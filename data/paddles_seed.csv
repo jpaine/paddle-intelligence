@@ -1,0 +1,11 @@
+slug,brand,model,thickness,weight_min,weight_max,face_material,core_material,thermoformed,msrp,release_year,usap_approved,source_url
+selkirk-labs-002-s-invikta,Selkirk Labs,002 S Invikta,16,8.2,8.6,Carbon Fiber,Polymer Core,true,299,2024,true,https://selkirk.com/labs-002
+joola-hyperion-c2,Joola,Hyperion C2,16,8.0,8.5,Carbon Fiber,Nomex Honeycomb,false,249,2024,true,https://joola.com/hyperion-c2
+engage-pursuit-mx-6-0,Engage,Pursuit MX 6.0,13,7.8,8.2,Fiberglass,Polymer,false,199,2023,true,https://engagepickleball.com/pursuit
+crbn-1-16mm,CRBN,1 16mm,16,8.0,8.5,Carbon Fiber,Polymer,true,249,2024,true,https://crbnpickleball.com/crbn1
+six-zero-double-black-diamond,Six Zero,Double Black Diamond,16,8.0,8.4,Carbon Fiber,Polymer,true,275,2024,true,https://sixzero.com/dbd
+gearbox-cx14e,Gearbox,CX14e,14,7.8,8.4,Carbon Fiber,Polymer,false,229,2023,true,https://gearboxpickleball.com/cx14e
+pro-lite-rebel-power,ProLite,Rebel Power,16,7.9,8.3,Composite,Foam,false,119,2023,true,https://prolite.com/rebel
+head-radical-tour,Head,Radical Tour,16,8.0,8.5,Graphite,Polymer,false,199,2023,true,https://head.com/radical
+franklin-stk-16,Franklin,STK 16,16,7.8,8.2,Composite,Polymer,false,89,2023,true,https://franklin.com/stk
+onix-z5,Onix,Z5,13,7.5,8.2,Composite,Nomex,false,79,2022,true,https://onix.com/z5
