@@ -1,17 +1,16 @@
-import { db } from "@/src/db";
-import { paddles } from "@/src/db/schema";
+import { getPaddleSlugs } from "@/src/data/paddles";
 
 const BASE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://paddle-intelligence.vercel.app";
 
 export default async function sitemap() {
-  let slugs: { slug: string }[] = [];
+  let slugs: string[] = [];
   try {
-    slugs = await db.select({ slug: paddles.slug }).from(paddles);
+    slugs = await getPaddleSlugs();
   } catch {
     // ignore
   }
 
-  const paddleUrls = slugs.map(({ slug }) => ({
+  const paddleUrls = slugs.map((slug) => ({
     url: `${BASE}/paddles/${slug}`,
     lastModified: new Date(),
     changeFrequency: "weekly" as const,

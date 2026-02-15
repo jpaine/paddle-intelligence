@@ -1,6 +1,11 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
-// Disable prefetch for Supabase connection pooler (Transaction mode)
-const client = postgres(process.env.DATABASE_URL!, { prepare: false });
+// Supabase: prepare: false for pooler; ssl: require for serverless
+const client = postgres(process.env.DATABASE_URL!, {
+  prepare: false,
+  ssl: "require",
+  max: 1,
+  connect_timeout: 10,
+});
 export const db = drizzle(client);

@@ -13,23 +13,30 @@ export const paddles = pgTable("paddles", {
   slug: text("slug").notNull().unique(),
   brand: text("brand").notNull(),
   model: text("model").notNull(),
-  thickness: real("thickness"),
+  variant: text("variant"),
+  thicknessMm: real("thickness_mm"),
   weightMin: real("weight_min"),
   weightMax: real("weight_max"),
   faceMaterial: text("face_material"),
   coreMaterial: text("core_material"),
   thermoformed: boolean("thermoformed").default(false),
-  msrp: real("msrp"),
+  edgeFoam: boolean("edge_foam").default(false),
+  unibody: boolean("unibody").default(false),
+  injectedFoam: boolean("injected_foam").default(false),
+  msrpUsd: real("msrp_usd"),
   releaseYear: integer("release_year"),
   usapApproved: boolean("usap_approved").default(false),
+  usapListingUrl: text("usap_listing_url"),
   createdAt: timestamp("created_at").notNull(),
   updatedAt: timestamp("updated_at").notNull(),
 });
 
 export const sources = pgTable("sources", {
   id: text("id").primaryKey(),
-  url: text("url").notNull(),
+  baseUrl: text("base_url").notNull(),
   hostname: text("hostname").notNull(),
+  name: text("name"),
+  notes: text("notes"),
   lastVerified: timestamp("last_verified"),
   createdAt: timestamp("created_at").notNull(),
 });
@@ -43,8 +50,32 @@ export const paddleSources = pgTable(
     sourceId: text("source_id")
       .notNull()
       .references(() => sources.id, { onDelete: "cascade" }),
+    sourceUrl: text("source_url"),
+    lastVerifiedAt: timestamp("last_verified_at"),
   },
   (t) => [primaryKey({ columns: [t.paddleId, t.sourceId] })]
+);
+
+export const fieldProvenance = pgTable(
+  "field_provenance",
+  {
+    id: text("id").primaryKey(),
+    paddleId: text("paddle_id")
+      .notNull()
+      .references(() => paddles.id, { onDelete: "cascade" }),
+    fieldName: text("field_name").notNull(),
+    valueText: text("value_text"),
+    normalizedValueText: text("normalized_value_text"),
+    normalizedValueNumeric: real("normalized_value_numeric"),
+    unit: text("unit"),
+    sourceUrl: text("source_url"),
+    sourceId: text("source_id").references(() => sources.id, {
+      onDelete: "set null",
+    }),
+    extractedAt: timestamp("extracted_at").notNull(),
+    confidence: real("confidence"),
+    notes: text("notes"),
+  }
 );
 
 export const submissions = pgTable("submissions", {
@@ -55,6 +86,7 @@ export const submissions = pgTable("submissions", {
   contactEmail: text("contact_email"),
   notes: text("notes"),
   createdAt: timestamp("created_at").notNull(),
+  processedAt: timestamp("processed_at"),
 });
 
 export const jobRuns = pgTable("job_runs", {

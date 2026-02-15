@@ -69,13 +69,13 @@ async function main() {
         slug: row.slug,
         brand: row.brand,
         model: row.model,
-        thickness,
+        thicknessMm: thickness,
         weightMin,
         weightMax,
         faceMaterial: row.face_material || null,
         coreMaterial: row.core_material || null,
         thermoformed,
-        msrp,
+        msrpUsd: msrp,
         releaseYear,
         usapApproved,
         createdAt: now,
@@ -87,13 +87,13 @@ async function main() {
         .set({
           brand: row.brand,
           model: row.model,
-          thickness,
+          thicknessMm: thickness,
           weightMin,
           weightMax,
           faceMaterial: row.face_material || null,
           coreMaterial: row.core_material || null,
           thermoformed,
-          msrp,
+          msrpUsd: msrp,
           releaseYear,
           usapApproved,
           updatedAt: now,
@@ -112,7 +112,7 @@ async function main() {
       if (!existingSource) {
         await db.insert(sources).values({
           id: sourceId,
-          url: row.source_url,
+          baseUrl: row.source_url,
           hostname,
           lastVerified: now,
           createdAt: now,
@@ -121,7 +121,7 @@ async function main() {
 
       await db
         .insert(paddleSources)
-        .values({ paddleId, sourceId })
+        .values({ paddleId, sourceId, sourceUrl: row.source_url, lastVerifiedAt: now })
         .onConflictDoNothing({
           target: [paddleSources.paddleId, paddleSources.sourceId],
         });

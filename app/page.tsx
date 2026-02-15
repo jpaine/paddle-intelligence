@@ -1,62 +1,12 @@
 import Link from "next/link";
-import { db } from "@/src/db";
-import { paddles, jobRuns } from "@/src/db/schema";
-import { desc, sql } from "drizzle-orm";
-
-async function getStats() {
-  try {
-    const [countResult] = await db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(paddles);
-    const totalPaddles = countResult?.count ?? 0;
-
-    const [brandsResult] = await db
-      .select({ count: sql<number>`count(distinct ${paddles.brand})::int` })
-      .from(paddles);
-    const totalBrands = brandsResult?.count ?? 0;
-
-    const [lastRun] = await db
-      .select({ completedAt: jobRuns.completedAt })
-      .from(jobRuns)
-      .where(sql`${jobRuns.completedAt} is not null`)
-      .orderBy(desc(jobRuns.completedAt))
-      .limit(1);
-    const lastUpdated = lastRun?.completedAt ?? null;
-
-    const [lastPaddle] = await db
-      .select({ updatedAt: paddles.updatedAt })
-      .from(paddles)
-      .orderBy(desc(paddles.updatedAt))
-      .limit(1);
-
-    const fallbackUpdated =
-      lastPaddle?.updatedAt ?? (lastUpdated ?? new Date(0));
-    const displayUpdated =
-      lastUpdated && lastUpdated > fallbackUpdated ? lastUpdated : fallbackUpdated;
-
-    return {
-      totalPaddles,
-      totalBrands,
-      lastUpdated:
-        displayUpdated.getTime() > 0
-          ? displayUpdated.toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "short",
-              day: "numeric",
-            })
-          : "—",
-    };
-  } catch {
-    return {
-      totalPaddles: 0,
-      totalBrands: 0,
-      lastUpdated: "—",
-    };
-  }
-}
+import { getStats } from "@/src/data/paddles";
 
 export default async function Home() {
-  const stats = await getStats();
+  const stats = await getStats().catch(() => ({
+    totalPaddles: 0,
+    totalBrands: 0,
+    lastUpdated: "—" as const,
+  }));
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-16">

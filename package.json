@@ -11,12 +11,24 @@
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "import": "pnpm tsx scripts/import_paddles_csv.ts",
+    "import:pickleball-effect": "pnpm tsx scripts/import_pickleball_effect_csv.ts",
+    "import:pickleball-effect:retry": "bash scripts/run-import-pickleball-effect-until-done.sh",
+    "import:slice": "pnpm tsx scripts/import_the_slice_csv.ts",
+    "enrich:submissions": "pnpm tsx scripts/enrich_from_submissions.ts",
+    "enrich:batch": "pnpm tsx scripts/enrich_batch.ts",
+    "sync:usap": "pnpm tsx scripts/sync_usap.ts",
+    "sync:johnkew": "pnpm tsx scripts/sync_johnkew.ts",
+    "sync:all": "pnpm run sync:usap && pnpm run import",
     "supabase:start": "npx supabase start",
     "supabase:stop": "npx supabase stop",
     "supabase:status": "npx supabase status",
-    "supabase:db-push": "npx supabase db push"
-  },
+"supabase:db-push": "npx supabase db push",
+                "test": "vitest run",
+                "test:watch": "vitest"
+            },
   "dependencies": {
+    "@supabase/supabase-js": "^2.95.3",
+    "cheerio": "^1.2.0",
     "csv-parse": "^6.1.0",
     "dotenv": "^17.3.1",
     "drizzle-orm": "^0.45.1",
@@ -39,6 +51,7 @@
     "supabase": "^2.76.8",
     "tailwindcss": "^3.4.1",
     "tsx": "^4.21.0",
-    "typescript": "^5"
-  }
+"typescript": "^5",
+        "vitest": "^2.0.0"
+    }
 }

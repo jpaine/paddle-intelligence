@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/src/db";
-import { paddles, sources, paddleSources } from "@/src/db/schema";
-import { eq, or } from "drizzle-orm";
+import { getPaddleById } from "@/src/data/paddles";
 
 export async function GET(
   request: NextRequest,
@@ -9,36 +7,23 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const [paddle] = await db
-      .select()
-      .from(paddles)
-      .where(or(eq(paddles.id, id), eq(paddles.slug, id)));
-    if (!paddle) {
+    const result = await getPaddleById(id);
+    if (!result) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
-
-    const sourceRows = await db
-      .select({
-        url: sources.url,
-        hostname: sources.hostname,
-        lastVerified: sources.lastVerified,
-      })
-      .from(paddleSources)
-      .innerJoin(sources, eq(paddleSources.sourceId, sources.id))
-      .where(eq(paddleSources.paddleId, paddle.id));
-
+    const { paddle, sources: sourceRows } = result;
     return NextResponse.json({
       id: paddle.id,
       slug: paddle.slug,
       brand: paddle.brand,
       model: paddle.model,
-      thickness: paddle.thickness,
+      thickness_mm: paddle.thicknessMm,
       weight_min: paddle.weightMin,
       weight_max: paddle.weightMax,
       face_material: paddle.faceMaterial,
       core_material: paddle.coreMaterial,
       thermoformed: paddle.thermoformed,
-      msrp: paddle.msrp,
+      msrp_usd: paddle.msrpUsd,
       release_year: paddle.releaseYear,
       usap_approved: paddle.usapApproved,
       created_at: paddle.createdAt,
@@ -47,6 +32,8 @@ export async function GET(
         url: s.url,
         hostname: s.hostname,
         last_verified: s.lastVerified,
+        source_url: s.sourceUrl,
+        last_verified_at: s.lastVerifiedAt,
       })),
     });
   } catch (e) {

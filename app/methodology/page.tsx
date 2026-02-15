@@ -24,9 +24,68 @@ export default function MethodologyPage() {
         <div>
           <h2 className="text-lg font-medium text-slate-900">Sources</h2>
           <p>
-            Primary sources include USAP-approved paddle listings, official brand
-            product pages, and major retailer listings. Where possible we link
-            to the source and record the hostname and last verification date.
+            Primary sources include the USA Pickleball approved paddle list
+            (equipment.usapickleball.org), official brand product pages, and
+            major retailer listings. The USAP list is synced periodically to
+            keep approval status and new paddles up to date. Where possible we
+            link to the source and record the hostname and last verification
+            date.
+          </p>
+          <p className="mt-2">
+            Many paddles in the index appear from the USAP list only (brand,
+            model, and approval status). Thickness, weight, face and core
+            materials, and MSRP are filled in where we have scraped
+            brand/retailer product pages or imported curated CSV data (e.g.{" "}
+            <a
+              href="https://theslicepickleball.com/pickleball-paddle-database/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-slate-800 underline"
+            >
+              The Slice Pickleball
+            </a>{" "}
+            paddle stats, Pickleball Effect master sheet). Where
+            we have permission, we also use lab-measured data (e.g.{" "}
+            <a
+              href="https://www.johnkewpickleball.com/paddle-database"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-slate-800 underline"
+            >
+              JohnKew Pickleball
+            </a>{" "}
+            paddle database) for thickness and weight; use is subject to their{" "}
+            <a
+              href="https://www.johnkewpickleball.com/content-usage-policy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-slate-800 underline"
+            >
+              Content Usage Policy
+            </a>
+            . Rows without those fields are listing-only until additional
+            sources are added.
+          </p>
+          <p className="mt-2">
+            Other paddle databases you may find useful:{" "}
+            <a
+              href="https://www.pickleballbase.co/database"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-slate-800 underline"
+            >
+              Pickleball Base
+            </a>
+            ,{" "}
+            <a
+              href="https://www.mattspickleball.com/all-paddles"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-slate-800 underline"
+            >
+              Matt&apos;s Pickleball
+            </a>
+            . We do not currently ingest from these; they are listed for reference.
           </p>
         </div>
 

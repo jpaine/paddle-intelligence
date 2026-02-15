@@ -1,8 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { db } from "@/src/db";
-import { paddles, sources, paddleSources } from "@/src/db/schema";
-import { eq } from "drizzle-orm";
+import { getPaddleBySlug } from "@/src/data/paddles";
 
 export async function generateMetadata({
   params,
@@ -10,19 +8,11 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const [paddle] = await db
-    .select({
-      brand: paddles.brand,
-      model: paddles.model,
-      thickness: paddles.thickness,
-      faceMaterial: paddles.faceMaterial,
-      coreMaterial: paddles.coreMaterial,
-    })
-    .from(paddles)
-    .where(eq(paddles.slug, slug));
+  const result = await getPaddleBySlug(slug);
+  const paddle = result?.paddle;
   if (!paddle) return { title: "Paddle Not Found – Pickleball Paddle Index" };
   const descParts = [];
-  if (paddle.thickness != null) descParts.push(`${paddle.thickness}mm`);
+  if (paddle.thicknessMm != null) descParts.push(`${paddle.thicknessMm}mm`);
   if (paddle.faceMaterial) descParts.push(paddle.faceMaterial);
   if (paddle.coreMaterial) descParts.push(paddle.coreMaterial);
   const description =
@@ -41,18 +31,9 @@ export default async function PaddlePage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const [paddle] = await db.select().from(paddles).where(eq(paddles.slug, slug));
-  if (!paddle) notFound();
-
-  const paddleSourceRows = await db
-    .select({
-      url: sources.url,
-      hostname: sources.hostname,
-      lastVerified: sources.lastVerified,
-    })
-    .from(paddleSources)
-    .innerJoin(sources, eq(paddleSources.sourceId, sources.id))
-    .where(eq(paddleSources.paddleId, paddle.id));
+  const result = await getPaddleBySlug(slug);
+  if (!result) notFound();
+  const { paddle, sources: paddleSourceRows } = result;
 
   const weightRange =
     paddle.weightMin != null && paddle.weightMax != null
@@ -69,11 +50,11 @@ export default async function PaddlePage({
     "@type": "Product",
     name: `${paddle.brand} ${paddle.model}`,
     brand: { "@type": "Brand", name: paddle.brand },
-    description: `Pickleball paddle: ${paddle.faceMaterial ?? "—"} face, ${paddle.coreMaterial ?? "—"} core${paddle.thickness != null ? `, ${paddle.thickness}mm` : ""}.`,
-    ...(paddle.msrp != null && {
+    description: `Pickleball paddle: ${paddle.faceMaterial ?? "—"} face, ${paddle.coreMaterial ?? "—"} core${paddle.thicknessMm != null ? `, ${paddle.thicknessMm}mm` : ""}.`,
+    ...(paddle.msrpUsd != null && {
       offers: {
         "@type": "Offer",
-        price: paddle.msrp,
+        price: paddle.msrpUsd,
         priceCurrency: "USD",
       },
     }),
@@ -94,12 +75,17 @@ export default async function PaddlePage({
       <h1 className="mt-4 text-2xl font-semibold text-slate-900">
         {paddle.brand} {paddle.model}
       </h1>
+      <p className="mt-1 text-sm text-slate-500">
+        {paddle.thicknessMm != null || paddle.faceMaterial != null
+          ? "Data: full specs from brand or curated source."
+          : "Data: USAP listing only; specs not yet added."}
+      </p>
 
       <dl className="mt-8 grid gap-3 sm:grid-cols-2">
         <div>
           <dt className="text-sm text-slate-500">Thickness</dt>
           <dd className="text-slate-900">
-            {paddle.thickness != null ? `${paddle.thickness} mm` : "—"}
+            {paddle.thicknessMm != null ? `${paddle.thicknessMm} mm` : "—"}
           </dd>
         </div>
         <div>
@@ -121,7 +107,7 @@ export default async function PaddlePage({
         <div>
           <dt className="text-sm text-slate-500">MSRP</dt>
           <dd className="text-slate-900">
-            {paddle.msrp != null ? `$${paddle.msrp}` : "—"}
+            {paddle.msrpUsd != null ? `$${paddle.msrpUsd}` : "—"}
           </dd>
         </div>
         <div>
