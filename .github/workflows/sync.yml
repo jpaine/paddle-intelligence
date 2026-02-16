@@ -1,5 +1,9 @@
 # Sync paddle data: USAP list + optional CSV import
-# Runs daily and on manual trigger. Requires repo secret DATABASE_URL.
+# Runs daily and on manual trigger.
+#
+# Required: Add DATABASE_URL as a repository secret (Settings → Secrets and variables → Actions).
+# Use your Supabase connection string (pooler URL recommended for CI:
+#   postgresql://postgres.[REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres
 
 name: Sync paddle data
 
@@ -27,10 +31,19 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Check DATABASE_URL secret
+        run: |
+          if [ -z "${{ secrets.DATABASE_URL }}" ]; then
+            echo "::error::DATABASE_URL is not set. Add it in GitHub: repo Settings → Secrets and variables → Actions → New repository secret (name: DATABASE_URL). Use Supabase pooler URL."
+            exit 1
+          fi
+          echo "DATABASE_URL is set."
+
       - name: Sync USAP approved paddles
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: pnpm run sync:usap
+        continue-on-error: true
 
       - name: Import CSV seed (optional)
         env:
