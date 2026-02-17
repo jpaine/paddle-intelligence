@@ -9,3 +9,5 @@ const client = postgres(process.env.DATABASE_URL!, {
   connect_timeout: 10,
 });
 export const db = drizzle(client);
+/** Raw client for session-level SET (e.g. statement_timeout) in import scripts. */
+export const postgresClient = client;

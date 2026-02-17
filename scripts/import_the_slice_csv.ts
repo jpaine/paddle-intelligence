@@ -14,6 +14,8 @@ import { db } from "../src/db";
 import { paddles, sources, paddleSources, jobRuns } from "../src/db/schema";
 import { eq } from "drizzle-orm";
 import { slugify } from "./lib/slug";
+import { setStatementTimeoutMs } from "./lib/db-timeout";
+import { wrapDatabaseConnectionError } from "../src/lib/db-connect";
 
 const DEFAULT_CSV_PATH = "data/the_slice_paddle_stats.csv";
 
@@ -54,7 +56,25 @@ async function loadCsv(): Promise<Record<string, string>[]> {
   return parse(csv, { columns: true, skip_empty_lines: true, relax_column_count: true }) as Record<string, string>[];
 }
 
+const BATCH_SIZE = 8;
+const DELAY_MS = 1500;
+
+function isRetryable(err: unknown): boolean {
+  const msg = String(err instanceof Error ? err.message : err);
+  const cause = err instanceof Error ? (err as { cause?: { code?: string } }).cause : null;
+  return (
+    cause?.code === "57014" ||
+    msg.includes("statement timeout") ||
+    (cause as NodeJS.ErrnoException)?.code === "ETIMEDOUT"
+  );
+}
+
 async function main() {
+  try {
+    await setStatementTimeoutMs(120_000); // 2 min per statement
+  } catch (e) {
+    throw wrapDatabaseConnectionError(e);
+  }
   const jobId = uuidv4();
   const startedAt = new Date();
   await db.insert(jobRuns).values({
@@ -90,17 +110,17 @@ async function main() {
     await db.update(sources).set({ lastVerified: now }).where(eq(sources.id, sourceId));
   }
 
+  const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
   let upserted = 0;
   let skipped = 0;
 
-  for (const row of rows) {
+  const processRow = async (row: Record<string, string>) => {
     const brand = pick(row, "Company", "Brand", "brand");
     const model = pick(row, "Paddle Name", "Paddle Name", "Model", "model");
     if (!brand || !model) {
       skipped++;
-      continue;
+      return;
     }
-
     const slug = slugify(brand, model);
     const thickness = parseNum(pick(row, "Core Thickness (mm)", "Core Thickness (mm)", "Thickness"));
     const weight = parseNum(pick(row, "Weight (oz)", "Weight (oz)", "Weight"));
@@ -108,20 +128,16 @@ async function main() {
     const weightMax = weight;
     const msrp = parseNum(pick(row, "Price", "Price", "MSRP"));
     const faceMaterial = pick(row, "Face Material", "Face Material");
-
     if (thickness != null && (thickness < 10 || thickness > 25)) {
       skipped++;
-      continue;
+      return;
     }
     if (weight != null && (weight < 6 || weight > 12)) {
       skipped++;
-      continue;
+      return;
     }
-
     const [existing] = await db.select({ id: paddles.id }).from(paddles).where(eq(paddles.slug, slug));
-
     const paddleId = existing?.id ?? uuidv4();
-
     if (!existing) {
       await db.insert(paddles).values({
         id: paddleId,
@@ -158,12 +174,27 @@ async function main() {
       if (msrp != null) updateSet.msrpUsd = msrp;
       await db.update(paddles).set(updateSet).where(eq(paddles.id, paddleId));
     }
-
     await db
       .insert(paddleSources)
       .values({ paddleId, sourceId, sourceUrl, lastVerifiedAt: now })
       .onConflictDoNothing({ target: [paddleSources.paddleId, paddleSources.sourceId] });
     upserted++;
+  };
+
+  for (let i = 0; i < rows.length; i += BATCH_SIZE) {
+    const batch = rows.slice(i, i + BATCH_SIZE);
+    const runBatch = async () => {
+      for (const row of batch) await processRow(row);
+    };
+    try {
+      await runBatch();
+    } catch (err) {
+      if (isRetryable(err)) {
+        await sleep(3000);
+        await runBatch();
+      } else throw err;
+    }
+    if (i + BATCH_SIZE < rows.length) await sleep(DELAY_MS);
   }
 
   await db

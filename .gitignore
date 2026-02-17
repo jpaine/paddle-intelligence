@@ -27,12 +27,15 @@ yarn-error.log*
 
 # local env files (secrets; set in Vercel for production)
 .env
-.env*.local
-.env.production
+.env*
+!.env.example
 .turso
 
 # vercel
 .vercel
+
+# supabase local
+supabase/.temp/
 
 # typescript
 *.tsbuildinfo

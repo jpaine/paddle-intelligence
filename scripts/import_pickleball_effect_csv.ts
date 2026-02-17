@@ -18,6 +18,7 @@ import { paddles, sources, paddleSources, jobRuns } from "../src/db/schema";
 import { eq } from "drizzle-orm";
 import { wrapDatabaseConnectionError } from "../src/lib/db-connect";
 import { slugify } from "./lib/slug";
+import { setStatementTimeoutMs } from "./lib/db-timeout";
 
 const DEFAULT_CSV_PATH = "data/pickleball_effect_paddle_database.csv";
 
@@ -61,6 +62,11 @@ async function loadCsv(): Promise<Record<string, string>[]> {
 }
 
 async function main() {
+  try {
+    await setStatementTimeoutMs(120_000); // 2 min per statement
+  } catch (e) {
+    throw wrapDatabaseConnectionError(e);
+  }
   const jobId = uuidv4();
   const startedAt = new Date();
   try {

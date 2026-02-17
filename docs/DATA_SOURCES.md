@@ -79,14 +79,7 @@ How paddle data gets into the index and how to add or refresh specs.
 
 ## Additional databases (not yet integrated)
 
-These sites host paddle databases that could be used as future data sources. Integration would require checking their terms of use and how data is exposed (export, API, or scrape).
-
-| Site | URL | Notes |
-|------|-----|--------|
-| **Pickleball Base** | [pickleballbase.co/database](https://www.pickleballbase.co/database) | Paddle database; terms and data format would need to be confirmed before integration. |
-| **Matt's Pickleball** | [mattspickleball.com/all-paddles](https://www.mattspickleball.com/all-paddles) | Tested/ranked paddles; terms and data format would need to be confirmed before integration. |
-
-To add one as a source: (1) confirm permission or permissive terms, (2) identify how to get data (CSV export, API, or documented scrape), (3) add a sync/import script and document it in this file.
+Sites that could be scraped or integrated next: **Pickleball Base** ([pickleballbase.co/database](https://www.pickleballbase.co/database)), **Matt's Pickleball** ([mattspickleball.com/all-paddles](https://www.mattspickleball.com/all-paddles)). See [PLANNED_SOURCES.md](PLANNED_SOURCES.md) for a checklist and how to add a new source.
 
 ## Field-level provenance and resolver
 
